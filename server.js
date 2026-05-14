@@ -21,8 +21,10 @@ app.use(express.static("client"))
 let MONGO_URI = process.env.MONGO_URI;
 let port = process.env.PORT || 5000;
 
-mongoose.connect(MONGO_URI).then(() => {
+mongoose.connect(MONGO_URI).then(async () => {
     console.log("Mongoose Connected!");
+    await User.updateMany({}, { status: false });
+    console.log("Reset all users to offline");
 });
 
 server.listen(port, () => {
@@ -61,11 +63,18 @@ io.on('connection', async (socket) => {
         callback({ ok: true });
     })
     socket.on("message", async (text) => {
-        let newMessage = await Message.create({
-            user: socket.user,
-            message: text,
-        })
-        io.sockets.emit("message", newMessage);
+        const message = text?.trim();
+        if (!socket.user || !message) return;
+
+        try {
+            let newMessage = await Message.create({
+                user: socket.user,
+                message,
+            })
+            io.sockets.emit("message", newMessage);
+        } catch (err) {
+            console.log(err);
+        }
     })
     socket.on("disconnect", async () => {
         if(!socket.user) return;

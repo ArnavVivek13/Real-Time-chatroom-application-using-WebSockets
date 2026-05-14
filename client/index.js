@@ -5,7 +5,7 @@ const chatboxinput = document.querySelector(".chatbox input")
 const useraddform = document.querySelector(".modal")
 const backdrop = document.querySelector(".backdrop")
 const useraddinput = document.querySelector(".modal input");
-const socket = io("http://localhost:5000");
+const socket = io();
 
 let users = [];
 let messages = [];
@@ -27,7 +27,10 @@ socket.on("message", (message) => {
 
 function messageSubmitHandler(e) {
     e.preventDefault();
-    socket.emit("message", chatboxinput.value);
+    const message = chatboxinput.value.trim();
+    if (!message) return;
+
+    socket.emit("message", message);
     chatboxinput.value = "";
 }
 
@@ -70,4 +73,6 @@ function updateMessages() {
             </li>
         `;
     }
+
+    messageList.scrollTop = messageList.scrollHeight;
 }
