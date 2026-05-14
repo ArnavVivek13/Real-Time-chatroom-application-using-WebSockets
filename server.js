@@ -18,18 +18,38 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("client"))
 
-let MONGO_URI = process.env.MONGO_URI;
-let port = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
+const port = process.env.PORT || 5000;
 
-mongoose.connect(MONGO_URI).then(async () => {
-    console.log("Mongoose Connected!");
-    await User.updateMany({}, { status: false });
-    console.log("Reset all users to offline");
-});
+function validateMongoUri(uri) {
+    if (!uri) {
+        throw new Error("Missing MONGO_URI environment variable.");
+    }
 
-server.listen(port, () => {
-    console.log("listening at port", port)
-});
+    if (uri.includes("<") || uri.includes(">")) {
+        throw new Error("MONGO_URI still contains placeholder angle brackets. Replace <db_password> with your real MongoDB Atlas password.");
+    }
+}
+
+async function startServer() {
+    try {
+        validateMongoUri(MONGO_URI);
+        await mongoose.connect(MONGO_URI);
+        console.log("Mongoose Connected!");
+
+        await User.updateMany({}, { status: false });
+        console.log("Reset all users to offline");
+
+        server.listen(port, () => {
+            console.log("listening at port", port)
+        });
+    } catch (err) {
+        console.error("Failed to start server:", err.message);
+        process.exit(1);
+    }
+}
+
+startServer();
 io.on('connection', async (socket) => {
     console.log('connected to', socket.id)
 
