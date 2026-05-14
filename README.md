@@ -3,6 +3,10 @@
 A lightweight, real‑time chat application built with **Socket.IO**, **Express**, and **MongoDB**.  
 Users can join the room, see who’s online, and send messages that are instantly broadcast to everyone—all with persistent history.
 
+# Deployment
+Chatty is deployed on render and available to use.
+Link: https://real-time-chatroom-application-using.onrender.com/
+
 ---
 
 ## Features
